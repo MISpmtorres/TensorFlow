@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Avian Influenza Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+</head>
+<body>
+    <h1>Avian Influenza Detection</h1>
+    <input type="file" id="imageUpload" accept="image/*" />
+    <button onclick="predict()">Predict</button>
+    <p id="result"></p>
+
+    <script>
+        let model;
+
+        async function loadModel() {
+            model = await tf.loadLayersModel('model_tfjs/model.json'); // Update path after hosting
+        }
+
+        async function predict() {
+            const imgElement = document.getElementById('imageUpload').files[0];
+            const img = new Image();
+            img.src = URL.createObjectURL(imgElement);
+            img.onload = async () => {
+                const tensorImg = tf.browser.fromPixels(img).resizeNearestNeighbor([128, 128]).toFloat().expandDims();
+                const predictions = model.predict(tensorImg);
+                predictions.array().then(array => {
+                    document.getElementById('result').innerText = array[0][0] > 0.5 ? 'Positive' : 'Negative';
+                });
+            };
+        }
+
+        loadModel();
+    </script>
+</body>
+</html>
